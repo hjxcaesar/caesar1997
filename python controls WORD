@@ -1,0 +1,131 @@
+from docx import Document
+import os
+from docx.enum.text import WD_ALIGN_PARAGRAPH  #设置对象居中、对齐等。
+from docx.document import Document as Doc
+from docx.shared import Inches,Pt
+from docx.oxml.ns import qn
+from docx.shared import Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import RGBColor
+from docx.oxml import OxmlElement
+
+num = 10    #文档个数
+len_of_str1 = 30
+len_of_str2 = 20
+
+def AddFooterNumber(run):
+    fldChar1 = OxmlElement('w:fldChar')  # creates a new element
+    fldChar1.set(qn('w:fldCharType'), 'begin')  # sets attribute on element
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')  # sets attribute on element
+    instrText.text = 'Page'
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'separate')
+    t = OxmlElement('w:t')
+    t.text = "Seq"
+    fldChar2.append(t)
+    fldChar4 = OxmlElement('w:fldChar')
+    fldChar4.set(qn('w:fldCharType'), 'end')
+    r_element = run._r
+    r_element.append(fldChar1)
+    r_element.append(instrText)
+    r_element.append(fldChar2)
+    r_element.append(fldChar4)
+def InsertPageNumber(Doc):
+    footer = Doc.sections[0].footer # 获取第一个节的页脚
+    footer.is_linked_to_previous = True  #编号续前一节
+    paragraph = footer.paragraphs[0] # 获取页脚的第一个段落
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER#页脚居中对齐
+    run_footer=paragraph.add_run() # 添加页脚内容
+    AddFooterNumber(run_footer)
+    font = run_footer.font
+    font.name = 'Times New Roman'#新罗马字体
+    font.size = Pt(12)#12号字体
+    font.bold = True#加粗
+
+for ii in range(num):
+    #遍历所有文档存储地址
+    doc = Document('C:/Users/...docx')# type: Doc
+    #要生成的文档存储地址
+    doc1 = Document('C:/Users/...docx')
+    
+    for no, p in enumerate(doc.paragraphs):
+
+        print(p.text)
+  #      print(type(p.text))
+  #      print(len(p.text))
+        p1 = doc1.add_paragraph(p.text)
+        
+        p1.paragraph_format.line_spacing = Pt(20)  # 行间距，固定值20磅
+        p1.paragraph_format.first_line_indent = Pt(21)  # 首行缩进
+        
+        if no == 1:
+            if len(p1.text)<len_of_str1:
+                p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                for run in p1.runs:
+                        run.font.italic = True
+                        run.font.size = Pt(18)
+                        run.font.name = "方正小标宋_GBK"
+                        # 设置像黑体这样的中文字体，必须添加下面 2 行代码
+                        r = run._element.rPr.rFonts
+                        r.set(qn("w:eastAsia"),"方正小标宋_GBK")
+            else:
+                for run in p1.runs:
+                    run.font.size = Pt(16)
+                    run.font.name = "方正仿宋_GBK"
+                    # 设置像黑体这样的中文字体，必须添加下面 2 行代码
+                    r = run._element.rPr.rFonts
+                    r.set(qn("w:eastAsia"),"方正仿宋_GBK")  
+        #设置标题格式
+        if no == 0:
+            p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for run in p1.runs:
+                run.font.bold = True
+                run.font.size = Pt(19)
+                run.font.name = "方正小标宋_GBK"
+                # 设置像黑体这样的中文字体，必须添加下面 2 行代码
+                r = run._element.rPr.rFonts
+                r.set(qn("w:eastAsia"),"方正小标宋_GBK")
+ 
+        else:
+            for run in p1.runs:
+                run.font.size = Pt(16)
+                run.font.name = "方正仿宋_GBK"
+                # 设置像黑体这样的中文字体，必须添加下面 2 行代码
+                r = run._element.rPr.rFonts
+                r.set(qn("w:eastAsia"),"方正仿宋_GBK")
+        #设置署名段靠右楷体
+        if no > 2 & len(p1.text) < len_of_str2 & len(p1.text) > 0:
+            if  str(p1.text[0]) == '（' or  str(p1.text[2]) == '（':
+                p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                for run in p1.runs:
+                    run.font.italic = True
+                    run.font.size = Pt(16)
+                    run.font.name = "楷体"
+                    r = run._element.rPr.rFonts
+                    r.set(qn("w:eastAsia"),"楷体")
+    # 添加分页符
+
+    doc1.add_page_break()
+
+    # 保存文档
+    for paragraph in doc1.paragraphs:
+        paragraph.paragraph_format.space_before = Pt(12)
+        # 段前
+    
+        paragraph.paragraph_format.space_after = Pt(10) 
+        # 段后
+    doc1.save('C:/Users/ABC/anaconda3/name_list0.docx')
+
+#调页边距    
+sections = doc1.sections 
+for section in sections: 
+    section.top_margin = Cm(3.2) 
+    section.bottom_margin = Cm(3.5) 
+    section.left_margin = Cm(2.7) 
+    section.right_margin = Cm(2.7)
+
+#插入页码
+InsertPageNumber(doc1)
+doc1.save('C:/Users/ABC/anaconda3/name_list0.docx')
