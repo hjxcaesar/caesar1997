@@ -1,0 +1,57 @@
+import os
+
+import openpyxl as op
+from openpyxl.styles import Alignment
+from openpyxl.styles import Font,Border,Side
+wb=op.load_workbook('nantongjob.xlsx')#打开工作簿
+
+ws=wb.active
+dic1 = []
+dic2 = []
+num = 0
+FontDic = [2,4,6,9,10,11]
+definite_num = 11
+thin = Side(border_style="thin")
+green = "00008000"
+double = Side(border_style="double", color=green)
+
+maxrow=ws.max_row
+maxcol=ws.max_column
+print("总行数：")
+print(maxrow)
+print("总列数：")
+print(maxcol)
+for ii in range(4,maxrow):  #搜索从第四行开始
+    one_cell = ws.cell(row = ii,column = definite_num)
+    if one_cell.value > 1:  #超过1的指定单元格插入确定的行
+        dic1.append(ii)
+        dic2.append(one_cell.value)
+        num = num + 1
+
+print(dic2)  
+#print(type(dic2[0]))  
+for jj in dic2:
+    maxrow = maxrow+jj - 1 #统计新的总行数
+print("新的总行数：")
+print (maxrow)
+sum = 0
+#print(dic1[0])
+for kk in range(num):
+    ws.insert_rows(int(dic1[kk])+sum,dic2[kk]-1)  #插入确定行数
+    
+    for ii in range(1,maxcol):
+        for jj in range(1,dic2[kk]):
+            ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).value = ws.cell(row = dic1[kk]+sum+dic2[kk]-1-jj+1,column=ii).value  #复制
+            ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).number_format = 'General'
+            if ii in FontDic:
+                ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).alignment = Alignment(horizontal="center",vertical="center",wrapText=True)
+            else:
+                ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).alignment = Alignment(vertical="center",wrapText=True)    #居中
+            
+            ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).font = Font(name="宋体", size=12) #字体、字号
+            ws.cell(row=dic1[kk]+sum+dic2[kk]-1-jj,column=ii).border = Border(top=thin, left=thin, right=thin, bottom=thin) #边框
+    sum = sum+dic2[kk]-1
+    
+ 
+
+wb.save('C:/Users/ABC/Documents/nantongjob2.xlsx')
